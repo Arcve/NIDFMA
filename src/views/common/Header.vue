@@ -41,7 +41,9 @@ import { mapGetters} from 'vuex'
         methods:{
             handleCommand(index) {
                 if(index == 'logout'){
-                    this.$store.dispatch('logout')
+                    this.$store.dispatch('logout').then(()=>{
+                        this.$router.push({ path: '/' });
+                    })
                 }
             }
         }

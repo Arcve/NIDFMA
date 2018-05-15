@@ -116,7 +116,7 @@ describe('Login.vue test', () => {
   describe("and when user does't input pwd" , function (){
     it('should show msg: pwd is required', async function () {
       let loginView = this.mountLoginView()
-      loginView.login('Gith', '')
+      loginView.login('user', '')
       await flushPromises()
       expect(console.warn).to.be.calledWith('async-validator:', ['pwd is required'])
       // expect(loginView.vm.$refs.validatePwd.validateMessage).to.equal("请输入密码")
@@ -136,10 +136,8 @@ describe('Login.vue test', () => {
         beforeEach(function () {
           let username = 'wj'
           let pwd = '1234'
-          this.store.commit('resetToken')
-          this.store.commit('resetUsername')
 
-          this.axios.onPost('api/login', {username, pwd}).replyOnce(200, {success:true, token:'random_token'})
+          this.axios.onPost('api/login', {username, pwd}).replyOnce(200, 'random_token')
           this.router.push = this.routerPushStub = sinon.stub();
 
           this.loginView.login(username, pwd)
@@ -155,20 +153,23 @@ describe('Login.vue test', () => {
         })
           
         it('should take user to Index Page', function (){
-          // expect(this.loginView.vm.form.username).to.equal('wj')
           expect(this.routerPushStub).calledWith({path:'/'})
         })
       })
 
       describe("and when login fail", function () {
-        beforeEach(function(){
+        beforeEach(async function(){
           let username = 'testu'
           let pwd = 'testp'
           this.router.push = this.routerPushStub = sinon.stub();
-          this.axios.onPost('api/login', {username, pwd}).replyOnce(200,{token:null, success:false})
+          this.axios.onPost('api/login', {username, pwd}).replyOnce(500, null)
           this.loginView = this.mountLoginView()
           this.loginView.login(username, pwd)
-          return flushPromises()  
+          await flushPromises()  
+        })
+
+        afterEach(function(){
+          this.axios.reset()
         })
         it('should show login fail msg', function() {
           expect(this.loginView.loginFailedMsg.isVisible()).to.be.true
